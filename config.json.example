@@ -1,0 +1,22 @@
+{
+    "default":  {
+        "username": "node",
+        "password": "secret",
+        "host": "localhost",
+        "port": 3000
+    },
+
+    "development": {
+        "username": "node",
+        "password": "secret",
+        "host": "localhost",
+        "port": 3000
+    },
+
+    "test": {
+        "username": "node",
+        "password": "secret",
+        "host": "localhost",
+        "port": 3666
+    }
+}
