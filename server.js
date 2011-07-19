@@ -20,7 +20,7 @@ var redisPort = process.env.REDIS_PORT,
 /*
  * Server port
  */
-var serverPort = process.env.NODE_PORT || 3001;
+var serverPort = process.env.PORT || 8080;
 
 /*
  * Send 404 Not Found
