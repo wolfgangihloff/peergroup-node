@@ -30,8 +30,14 @@ var send404 = function (res) {
     res.end("404 Not Found");
 };
 
-var redisClient = redis.createClient(redisPort, redisHost),
-    subscribeRedisClient = redis.createClient(redisPort, redisHost);
+var parseUrl = require('url').parse;
+var db_uri = parseUrl(process.env['REDISTOGO_URL']),
+    db_pwd = db_uri.auth.split(':')[1],
+
+var redisClient = redis.createClient(db_uri.port, db_uri.hostname),
+    subscribeRedisClient = redis.createClient(db_uri.port, db_uri.hostname);
+    redisClient.auth(db_pwd);
+    subscribeRedisClient.auth(db_pwd);
 
 /*
  * Return first (probably random) key
