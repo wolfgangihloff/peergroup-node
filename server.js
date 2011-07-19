@@ -32,12 +32,13 @@ var send404 = function (res) {
 
 var parseUrl = require('url').parse;
 var db_uri = parseUrl(process.env['REDISTOGO_URL']),
-    db_pwd = db_uri.auth.split(':')[1],
+    db_pwd = db_uri.auth.split(':')[1];
 
 var redisClient = redis.createClient(db_uri.port, db_uri.hostname),
     subscribeRedisClient = redis.createClient(db_uri.port, db_uri.hostname);
-    redisClient.auth(db_pwd);
-    subscribeRedisClient.auth(db_pwd);
+
+redisClient.auth(db_pwd);
+subscribeRedisClient.auth(db_pwd);
 
 /*
  * Return first (probably random) key
