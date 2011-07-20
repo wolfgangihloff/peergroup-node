@@ -26,6 +26,14 @@ if (process.env.REDISTOGO_URL) {
     redisHost = process.env.REDIS_HOST;
 }
 
+var redisClient = redis.createClient(redisPort, redisHost),
+    subscribeRedisClient = redis.createClient(redisPort, redisHost);
+
+if (redisPwd) {
+    redisClient.auth(redisPwd);
+    subscribeRedisClient.auth(redisPwd);
+}
+
 /*
  * Server port
  */
@@ -38,14 +46,6 @@ var send404 = function (res) {
     res.writeHead(404, {"Content-Type": "text/plain"});
     res.end("404 Not Found");
 };
-
-var redisClient = redis.createClient(redisPort, redisHost),
-    subscribeRedisClient = redis.createClient(redisPort, redisHost);
-
-if (redisPwd) {
-    redisClient.auth(redisPwd);
-    subscribeRedisClient.auth(redisPwd);
-}
 
 /*
  * Return first (probably random) key
