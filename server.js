@@ -2,21 +2,30 @@ var http = require("http"),
     util = require("util"),
     fs = require("fs"),
     sys = require("sys"),
+    parseUrl = require('url').parse,
     io = require("socket.io"),
     redis = require("redis"),
     _und = require("underscore");
 
 /*
- * Node environment
+ * Redis configuration
  */
-var nodeEnv = process.env.NODE_ENV || "default";
+var redisPort,
+    redisHost,
+    redisPwd,
+    redisUri;
 
-/*
- * Redis connection address
- */
-var redisPort = process.env.REDIS_PORT,
+if (process.env.REDISTOGO_URL) {
+    redisUri  = parseUrl(process.env.REDISTOGO_URL);
+    redisPwd  = redisUri.auth.split(':')[1];
+    redisHost = redisUri.hostname;
+    redisPort = redisUri.port;
+} else {
+    redisPort = process.env.REDIS_PORT,
     redisHost = process.env.REDIS_HOST,
-    redisDb =   process.env.REDIS_DB || 0;
+    redisDb   = process.env.REDIS_DB || 0;
+}
+
 /*
  * Server port
  */
@@ -30,15 +39,13 @@ var send404 = function (res) {
     res.end("404 Not Found");
 };
 
-var parseUrl = require('url').parse;
-var db_uri = parseUrl(process.env['REDISTOGO_URL']),
-    db_pwd = db_uri.auth.split(':')[1];
+var redisClient = redis.createClient(redisPort, redisHost),
+    subscribeRedisClient = redis.createClient(redisPort, redisHost);
 
-var redisClient = redis.createClient(db_uri.port, db_uri.hostname),
-    subscribeRedisClient = redis.createClient(db_uri.port, db_uri.hostname);
-
-redisClient.auth(db_pwd);
-subscribeRedisClient.auth(db_pwd);
+if (redisPwd) {
+    redisClient.auth(redisPwd);
+    subscribeRedisClient.auth(redisPwd);
+}
 
 /*
  * Return first (probably random) key
@@ -71,19 +78,10 @@ util.log("Server started on port " + serverPort);
 
 var PGS = {
     initialize: function () {
-        //var config;
-        PGS.username = "node"; //config.username;
-        PGS.password = "secret"; //config.password;
-        PGS.host = "localhost"; //config.host;
-        PGS.port = 3000; //config.port;
-        // fs.readFile('./config.json', 'utf8', function (err, data) {
-            // if (err) throw err;
-            // config = JSON.parse(data)[nodeEnv];
-            // PGS.username = config.username;
-            // PGS.password = config.password;
-            // PGS.host = config.host;
-            // PGS.port = config.port;
-        // });
+        PGS.username = process.env.PGS_USERNAME || "node";
+        PGS.password = process.env.PGS_SECRET   || "secret";
+        PGS.host     = process.env.PGS_HOST     || "localhost";
+        PGS.port     = process.env.PGS_PORT     || 3000;
     },
 
     auth_header: function () {
