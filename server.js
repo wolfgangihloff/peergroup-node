@@ -1,11 +1,11 @@
-var http = require("http"),
-    util = require("util"),
-    fs = require("fs"),
-    sys = require("sys"),
+var http     = require("http"),
+    util     = require("util"),
+    fs       = require("fs"),
+    sys      = require("sys"),
     parseUrl = require('url').parse,
-    io = require("socket.io"),
-    redis = require("redis"),
-    _und = require("underscore");
+    io       = require("socket.io"),
+    redis    = require("redis"),
+    und      = require("underscore");
 
 /*
  * Redis configuration
@@ -118,7 +118,7 @@ var PGS = {
 var eachSession = function (key, callback) {
     var sessionsKey = key + ":sessions";
     redisClient.hgetall(sessionsKey, function (err, replies) {
-        _und.each(replies, function(sessionId, userId) {
+        und.each(replies, function(sessionId, userId) {
             var client = socket.clients[sessionId];
             if (client) {
                 callback.call(client, client);
@@ -163,7 +163,7 @@ var initializeClientConnections = function () {
 
                                 setTimeout(function () {
                                     redisClient.hkeys(chat.sessionsKey, function (err, resp) {
-                                        if (!_und.include(resp, userId)) {
+                                        if (!und.include(resp, userId)) {
                                             redisClient.publish(chat.channel, JSON.stringify({chat_presence: {user_ids: resp, user_id: userId, status: "exit"}}));
                                         }
                                     });
@@ -202,7 +202,7 @@ var initializeClientConnections = function () {
                                 // remove member from supervision after 30 seconds
                                 supervisionStatusTimeout = setTimeout(function () {
                                     redisClient.hkeys(supervisionSessionsKey, function (err, resp) {
-                                        if (!_und.include(resp, userId)) {
+                                        if (!und.include(resp, userId)) {
                                             PGS.request(PGS.node_supervision_member_path(supervisionId, userId), "DELETE");
                                         }
                                     });
