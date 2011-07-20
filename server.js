@@ -13,7 +13,8 @@ var http = require("http"),
 var redisPort,
     redisHost,
     redisPwd,
-    redisUri;
+    redisUri,
+    redisDb = process.env.REDIS_DB || 0;
 
 if (process.env.REDISTOGO_URL) {
     redisUri  = parseUrl(process.env.REDISTOGO_URL);
@@ -21,9 +22,8 @@ if (process.env.REDISTOGO_URL) {
     redisHost = redisUri.hostname;
     redisPort = redisUri.port;
 } else {
-    redisPort = process.env.REDIS_PORT,
-    redisHost = process.env.REDIS_HOST,
-    redisDb   = process.env.REDIS_DB || 0;
+    redisPort = process.env.REDIS_PORT;
+    redisHost = process.env.REDIS_HOST;
 }
 
 /*
@@ -79,7 +79,7 @@ util.log("Server started on port " + serverPort);
 var PGS = {
     initialize: function () {
         PGS.username = process.env.PGS_USERNAME || "node";
-        PGS.password = process.env.PGS_SECRET   || "secret";
+        PGS.password = process.env.PGS_PASSWORD || "secret";
         PGS.host     = process.env.PGS_HOST     || "localhost";
         PGS.port     = process.env.PGS_PORT     || 3000;
     },
