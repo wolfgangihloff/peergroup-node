@@ -21,12 +21,20 @@ Run node server:
 node server.js
 ```
 
+Tip: You can run node as root user (sudo node ...) or with `authbind` (authbind node ...), so socket.io could bind to low port to serve xml policy file for Flash.
+
 ## Test ##
 
 To run specs from rails app you need to run node:
 
 ```
 REDIS_DB=1 PGS_PORT=3666 node server.js
+```
+
+This task is available via rake:
+
+```
+rake spec_node
 ```
 
 REDIS_DB should be number that you specified in config/redis.yml in rails app test group.
