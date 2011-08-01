@@ -241,6 +241,9 @@ var subscribeToChannels = function () {
         case "chat:*":
             type = "chat";
             break;
+        case "group:*":
+            type = "group";
+            break;
         default:
             util.log("Unknown message type: " + rootKey);
             return;
@@ -254,6 +257,7 @@ var subscribeToChannels = function () {
     });
     subscribeRedisClient.psubscribe("supervision:*");
     subscribeRedisClient.psubscribe("chat:*");
+    subscribeRedisClient.psubscribe("group:*");
 };
 
 subscribeToChannels();
