@@ -59,6 +59,15 @@ var firstKey = function (obj) {
     }
 };
 
+var Group = function (id, token) {
+  this.userAuthenticationKey = "group:" + id + ":token:" + token;
+  this.sessionsKey = "group:" + id + ":sessions";
+  this.channel = "group:" + id;
+};
+
+Group.prototype.authenticationSuccessedMessage = { type: "group.authentication", status: "OK" };
+Group.prototype.authenticationFailedMessage = { type: "group.authentication", status: "error", text: "Invalid ID or token" };
+
 var Chat = function (id, token) {
     this.userAuthenticationKey = "chat:" + id + ":token:" + token;
     this.sessionsKey = "chat:" + id + ":sessions";
@@ -133,6 +142,24 @@ var initializeClientConnections = function () {
     var supervisionStatusTimeout;
     socket.on('connection', function (client) {
         client.on("message", function (message) {
+            if (message.type.search(/^group\./) === 0) {
+             if  (message.type === "group.authenticate") {
+               var groupId = message.data.groupId,
+                   token = message.data.token,
+                   group = new Group(groupId, token);
+               redisClient.get(group.userAuthenticationKey, function (err, userId) {
+                 if (userId) {
+                   util.log("[group] User:" + userId + " authenticated for group:" + groupId + " sessionId:" + client.sessionId);
+                   client.send(group.authenticationSuccessedMessage);
+                   redisClient.hset(group.sessionsKey, userId, client.sessionId);
+                 }
+                 client.on("disconnect", function () {
+                     // Remove user from chat session after 30 seconds
+                     redisClient.hdel(group.sessionsKey, userId);
+                 });
+               });
+             }
+            }
             /**
              * CHAT
              *  - authenticate
