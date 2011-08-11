@@ -268,6 +268,9 @@ var subscribeToChannels = function () {
         case "chat:*":
             type = "chat";
             break;
+        case "chat_activity:*":
+            type = "chat_activity";
+            break;
         case "group:*":
             type = "group";
             break;
@@ -284,6 +287,7 @@ var subscribeToChannels = function () {
     });
     subscribeRedisClient.psubscribe("supervision:*");
     subscribeRedisClient.psubscribe("chat:*");
+    subscribeRedisClient.psubscribe("chat_activity:*");
     subscribeRedisClient.psubscribe("group:*");
 };
 
