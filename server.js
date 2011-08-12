@@ -72,6 +72,7 @@ var ChatActivity = function (id, token) {
   this.userAuthenticationKey = "activity:" + id + ":token:" + token;
   this.sessionsKey = "activity:" + id + ":sessions";
   this.channel = "activity:" + id;
+  this.userChannel = "activity:" + id + ":user:";
 }
 
 ChatActivity.prototype.authenticationSuccessedMessage = { type: "activity.authenticate", status: "OK" };
@@ -163,6 +164,16 @@ var initializeClientConnections = function () {
                         redisClient.hset(chatActivity.sessionsKey, userId, client.sessionId);
                       }
                     });
+              }
+              if (message.type === "activity.ping") {
+                var chatId = message.data.chatId,
+                    token = message.data.token,
+                    status = message.data.status,
+                    userId = message.data.userId,
+                    chatActivity = new ChatActivity(chatId, token);
+                timestamp = parseInt(Number(new Date) /1000);
+                redisClient.publish(chatActivity.channel, JSON.stringify({message: {status: status, id: userId, timestamp: timestamp} }) );
+                redisClient.setex(chatActivity.userChannel + userId, 60, status);
               }
             }
             
