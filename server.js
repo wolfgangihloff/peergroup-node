@@ -68,6 +68,15 @@ var Group = function (id, token) {
 Group.prototype.authenticationSuccessedMessage = { type: "group.authentication", status: "OK" };
 Group.prototype.authenticationFailedMessage = { type: "group.authentication", status: "error", text: "Invalid ID or token" };
 
+var ChatActivity = function (id, token) {
+  this.userAuthenticationKey = "activity:" + id + ":token:" + token;
+  this.sessionsKey = "activity:" + id + ":sessions";
+  this.channel = "activity:" + id;
+}
+
+ChatActivity.prototype.authenticationSuccessedMessage = { type: "activity.authenticate", status: "OK" };
+ChatActivity.prototype.authenticationFailedMessage = { type: "activity.authenticate", status: "error", text: "Invalid ID or token" };
+
 var Chat = function (id, token) {
     this.userAuthenticationKey = "chat:" + id + ":token:" + token;
     this.sessionsKey = "chat:" + id + ":sessions";
@@ -142,6 +151,21 @@ var initializeClientConnections = function () {
     var supervisionStatusTimeout;
     socket.on('connection', function (client) {
         client.on("message", function (message) {
+            if (message.type.search(/^activity\./) === 0) {
+              if (message.type === "activity.authenticate") {
+                var chatId = message.data.chatId,
+                    token = message.data.token,
+                    chatActivity = new ChatActivity(chatId, token);
+                    redisClient.get(chatActivity.userAuthenticationKey, function (err, userId) {
+                      if (userId) {
+                        util.log("[activity] User: " + userId + " authenticated for chat: " + chatId + " sessionId: " + client.sessionId);
+                        client.send(chatActivity.authenticationSuccessedMessage);
+                        redisClient.hset(chatActivity.sessionsKey, userId, client.sessionId);
+                      }
+                    });
+              }
+            }
+            
             if (message.type.search(/^group\./) === 0) {
              if  (message.type === "group.authenticate") {
                var groupId = message.data.groupId,
@@ -265,11 +289,11 @@ var subscribeToChannels = function () {
         case "supervision:*":
             type = "supervision";
             break;
+        case "activity:*":
+            type = "activity";
+            break;            
         case "chat:*":
             type = "chat";
-            break;
-        case "chat_activity:*":
-            type = "chat_activity";
             break;
         case "group:*":
             type = "group";
@@ -285,9 +309,13 @@ var subscribeToChannels = function () {
             client.send(decodedMessage);
         });
     });
+    subscribeRedisClient.on("error", function (foo, bar) {
+      util.log("\n\n Error !! \n\n");
+      util.log(foo);
+    });
     subscribeRedisClient.psubscribe("supervision:*");
     subscribeRedisClient.psubscribe("chat:*");
-    subscribeRedisClient.psubscribe("chat_activity:*");
+    subscribeRedisClient.psubscribe("activity:*");
     subscribeRedisClient.psubscribe("group:*");
 };
 
