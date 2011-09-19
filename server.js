@@ -29,6 +29,14 @@ if (process.env.REDISTOGO_URL) {
 var redisClient = redis.createClient(redisPort, redisHost),
     subscribeRedisClient = redis.createClient(redisPort, redisHost);
 
+redisClient.on("error", function (err, res) {
+   util.log(err);
+});
+
+redisClient.on("connect", function (err, res) {
+    util.log("Connected!");
+})
+
 if (redisPwd) {
     redisClient.auth(redisPwd);
     subscribeRedisClient.auth(redisPwd);
@@ -152,6 +160,7 @@ var initializeClientConnections = function () {
     var supervisionStatusTimeout;
     socket.on('connection', function (client) {
         client.on("message", function (message) {
+            util.log("message:" + message);
             if (message.type.search(/^activity\./) === 0) {
               if (message.type === "activity.authenticate") {
                 var chatId = message.data.chatId,
