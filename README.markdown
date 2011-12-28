@@ -80,3 +80,6 @@ To have your own instance on heroku:
   ```
 
 Refer to heroku [docs](http://devcenter.heroku.com/articles/node-js) for more informations.
+
+## License ##
+MIT License. Copyright © 2011 Wolfgang Ihloff 
